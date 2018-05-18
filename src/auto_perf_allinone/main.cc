@@ -331,9 +331,9 @@ int main (int argc, char* argv[])
 	cout << "free up system memory for this experiment !\n";
 	system("sudo sync && echo 3 | sudo tee /proc/sys/vm/drop_caches");
 
-	if (MAIL_MODE) system ("sudo mail -s \"Experiment Begin Mention \" xxx@example.com < /dev/null ");
+	//if (MAIL_MODE) system ("sudo mail -s \"Experiment Begin Mention \" xxx@example.com < /dev/null ");
 
-	char cmd[512];
+	//char cmd[512];
 
 	init_coverage_map_vec();
 	cout << "purely random start !!" << endl ;
