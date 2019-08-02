@@ -47,6 +47,7 @@ extern int read_from_file(char* filename1, COVG_MAP_VEC& trace, Config_Map& map_
 
 extern struct Record_average average_record;
 extern vector<pair<struct Test_Parems, Record_average> > input_output_relation;
+/*
 int process_to_map(COVG_MAP_VEC& covg_map_vec, Config_Map& config_map, int start, int end, char* folder, int mode, int diff)
 {
 	int Tries_num = 1;
@@ -77,4 +78,6 @@ int process_to_map(COVG_MAP_VEC& covg_map_vec, Config_Map& config_map, int start
 	}
 
 	return 0;
-}
+}*/
+
+

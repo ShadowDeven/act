@@ -52,9 +52,10 @@ int random_cube_record(struct RANGE_INFO& range_info, struct State_Record& cube_
 {
 	cube_state.cwnd = random_range_zero(range_info.cwnd_range);
 	cube_state.ssthresh = random_range_zero(range_info.ssth_range);
-	cube_state.srtt = random_range_zero(range_info.rtt_range);
-	cube_state.rttvar = random_range_zero(range_info.rtvar_range);
-	cube_state.tcp_state = random_range_zero(range_info.state_range);
+	//cube_state.srtt = random_range_zero(range_info.rtt_range);
+	//cube_state.rttvar = random_range_zero(range_info.rtvar_range);
+	//cube_state.tcp_state = random_range_zero(range_info.state_range);
+	//cube_state.prev_tcp_state = random_range_zero(range_info.prev_state_range);
 	return 0;
 }
 
@@ -175,3 +176,5 @@ void random_input_value_2(struct Test_Parems_2& test_para)
 	test_para.router_queue_size = Router_Queue_type(random_flag(Router_Queue_Last));
 	test_para.cross_traffic_size = Cross_Traffic_type(random_flag(Cross_Traffic_Last));
 }
+
+
