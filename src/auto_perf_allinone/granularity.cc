@@ -27,10 +27,10 @@ int state_granularity_mapping(struct State_Record& old_record, int granularity, 
 {
 	new_record.cwnd = (old_record.cwnd - 1) / granularity;
 	new_record.ssthresh = (old_record.ssthresh - 1) / granularity;
-	new_record.srtt = (old_record.srtt - 1) / granularity;
-	new_record.rttvar = (old_record.rttvar - 1) / granularity;
+	//new_record.srtt = (old_record.srtt - 1) / granularity;
+	//new_record.rttvar = (old_record.rttvar - 1) / granularity;
 	//new_record.target = (old_record.target - 1) / granularity;
-	new_record.tcp_state = old_record.tcp_state ; // no grain for states
+	//new_record.tcp_state = old_record.tcp_state ; // no grain for states
 	//new_record.prev_tcp_state = old_record.prev_tcp_state ;
 	return 0;
 }
@@ -59,13 +59,12 @@ int insert_state(struct State_Record& tmp, COVG_MAP_VEC& map_vec, Config_Map& co
 		int cwnd = (tmp.cwnd - 1) / granularity;
 		//int target = (tmp.target - 1) / granularity;
 		int ssthresh = (tmp.ssthresh - 1) / granularity;
-		int srtt = (tmp.srtt - 1) / granularity;
-		int rttvar = (tmp.rttvar - 1) / granularity;
-		int state = tmp.tcp_state ; // no grain for states
+		//int srtt = (tmp.srtt - 1) / granularity;
+		//int rttvar = (tmp.rttvar - 1) / granularity;
+		//int state = tmp.tcp_state ; // no grain for states
 		//int prev_state = tmp.prev_tcp_state ; // no grain for state
-		
-		//TO DO
-		struct State_Record tmp_cube(cwnd, ssthresh, srtt, rttvar, state, 0);
+
+		struct State_Record tmp_cube(cwnd, ssthresh, 0);
 		Cube_State_Map::iterator it = map_vec[i].coverage_map.find(tmp_cube);
 
 		if (it != map_vec[i].coverage_map.end())
@@ -134,16 +133,13 @@ int cal_range (struct RANGE_INFO & range_info, int granularity)
 	range_info.cwnd_range = CWND_RANGE / granularity;
 	range_info.ssth_range = SSTH_RANGE / granularity;
 	//range_info.target_range = TARGET_RANGE / granularity;
-	range_info.rtt_range = granularity >= RTT_RANGE ? 1 : RTT_RANGE / granularity;
-	range_info.rtvar_range = granularity >= RTVAR_RANGE ? 1 : RTVAR_RANGE / granularity;
-	range_info.state_range = STATE_RANGE; // / (tcp_state_granularity); no grain for states
+	//range_info.rtt_range = granularity >= RTT_RANGE ? 1 : RTT_RANGE / granularity;
+	//range_info.rtvar_range = granularity >= RTVAR_RANGE ? 1 : RTVAR_RANGE / granularity;
+	//range_info.state_range = STATE_RANGE; // / (tcp_state_granularity); no grain for states
 	//range_info.prev_state_range = STATE_RANGE;
-
-	//TO DO
-	range_info.total = range_info.cwnd_range * range_info.ssth_range
-					* range_info.rtt_range * range_info.rtvar_range
-		 			* range_info.state_range;
-		 	//* range_info.prev_state_range;
+	range_info.total = range_info.cwnd_range * range_info.ssth_range;
+			//* range_info.rtt_range //* range_info.rtvar_range;
+		 	//* range_info.state_range * range_info.prev_state_range;
 	return 0;
 }
 

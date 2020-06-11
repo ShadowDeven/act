@@ -36,7 +36,7 @@ INPUT_OUT_MAP input_output_map;
 int index_i = 0;
 int granularity = 1;
 
-//unsigned int Prev_state = 0;
+unsigned int Prev_state = 0;
 
 //format:d,c:%u,s:%u,ca:%u,r:%u,o:%u,t:%u
 int convert_string_to_elem(string& line, COVG_MAP_VEC& trace, Config_Map& map_config, vector<struct Test_Parems>& test_para_vec)
@@ -93,36 +93,36 @@ int convert_string_to_elem(string& line, COVG_MAP_VEC& trace, Config_Map& map_co
 	else if (state == 3) state = 2; // substitute State CWR(2) with State Recovery(3) for state(0-3)
 	average_record.cwnd_aver += (cwnd - average_record.cwnd_aver) * 1.0 / (index_i + 1);
 	average_record.ssth_aver += (ssthresh - average_record.ssth_aver) * 1.0 / (index_i + 1);
-	average_record.rtt_aver += (srtt - average_record.rtt_aver) * 1.0 / (index_i + 1);
-	average_record.rttvar_aver += (rttvar - average_record.rttvar_aver) * 1.0 / (index_i + 1);
-	average_record.state_aver += (state - average_record.state_aver) * 1.0 / (index_i + 1);
+	//average_record.rtt_aver += (srtt - average_record.rtt_aver) * 1.0 / (index_i + 1);
+	//average_record.rttvar_aver += (rttvar - average_record.rttvar_aver) * 1.0 / (index_i + 1);
+	//average_record.state_aver += (state - average_record.state_aver) * 1.0 / (index_i + 1);
 	//average_record.prev_state_aver += (Prev_state - average_record.prev_state_aver) * 1.0 / (index_i + 1);
 	//average_record.target_aver += (target - average_record.target_aver) * 1.0 / (index_i + 1);
 	index_i++;
 
-	if (cwnd > 0 && cwnd <= CWND_RANGE && ssthresh > 0 && ssthresh <= SSTH_RANGE && srtt > 0 
-		&& srtt <= RTT_RANGE && rttvar > 0 && rttvar <= RTVAR_RANGE && state >= 0 && state < STATE_RANGE 
+	if (cwnd > 0 && cwnd <= CWND_RANGE && ssthresh > 0 && ssthresh <= SSTH_RANGE 
+		//&& srtt > 0 && srtt <= RTT_RANGE //&& rttvar > 0 && rttvar <= RTVAR_RANGE 
+		//&& state >= 0 && state < STATE_RANGE 
 		&& curr_time > 0)  //ssthresh at least 2
 	{
-		struct State_Record tmp(cwnd, ssthresh, srtt, rttvar, state, curr_time);
+		struct State_Record tmp(cwnd, ssthresh, curr_time);
 		insert_state(tmp, trace, map_config, test_para_vec);
 	}
 	
-	//Prev_state = state;
+	Prev_state = state;
 	return 0;
 }
 
 //about 1.5 percent of  2048 total size (given 128 size granularity)
 //#define COVG_LIMIT_RANDOM  20
 //#define COVG_LIMIT_FEEDBACK1  20
-#define GROWTH_SSH 1000
+#define GROWTH_SSH 2000
 //#define COVG_LIMIT_FEEDBACK2  20
-#define TOLERANCE 3
+#define TOLERANCE 5
 #define INF 99999999999
 int total_files = 0;
 int prev_coverage_size = 0;
 int re_counter = 0;
-int CoverageCheckPer=20;
 
 /*
 This function is used to process ns3-dce traces and decide to switch feedbacks
@@ -162,36 +162,31 @@ The function to check map coverage
 */
 int coverage_check(COVG_MAP_VEC& trace){
 
-	if (total_files % CoverageCheckPer == 0) //Check current coverage every 5000 times
+	if (total_files % 10 == 0) //Check current coverage every 5000 times
 	{
 		
 		double inc_per = trace[0].coverage_map.size() - prev_coverage_size; //get percentage of map coverage growth
 
-		cout << "Every 100 times:" << trace[0].coverage_map.size()  << " ,prev_coverage_size:" << prev_coverage_size << ", growth num count: " << inc_per << " , total files:" << total_files << endl;
+		cout << "Every 10 times:" << trace[0].coverage_map.size()  << " ,prev_coverage_size:" << prev_coverage_size << ", growth num count: " << inc_per << " , total files:" << total_files << endl;
 
 		cal_coverage_AllGrans (covg_map_vec);
 		prev_coverage_size = trace[0].coverage_map.size(); // Defalut focus on 128 size coverage
-		
-		//Switch based on coverage growth
 		/*
 		// could add a switching time; random could be just 10%, feedback apply different %
 		if (inc_per < COVG_LIMIT_FEEDBACK2) return 3 ;//to switching for feedback 2
 		if (inc_per < COVG_LIMIT_FEEDBACK1) return 2 ;//to switching for feedback 1
 		if (inc_per < COVG_LIMIT_RANDOM) return 1 ;//to switching for random
 		*/
+		if (TOTAL_EXECUTION > 25 && TOTAL_EXECUTION < 35) return 1 ;//to switching for feedback 2
+		if (TOTAL_EXECUTION > 15 && TOTAL_EXECUTION < 25) return 1 ;//to switching for feedback 1
+        	if (TOTAL_EXECUTION > 5  && TOTAL_EXECUTION < 15 ) return 1 ;//to switching for random
 		
-		//Switch based on execution times
-		if (TOTAL_EXECUTION > 95 && TOTAL_EXECUTION < 105) return 1 ;//to switching for feedback 2
-		if (TOTAL_EXECUTION > 195 && TOTAL_EXECUTION < 205) return 1 ;//to switching for feedback 1
- 	    if (TOTAL_EXECUTION >295  && TOTAL_EXECUTION < 305 ) return 1 ;//to switching for random
-		
-		//switch based on consecutive growth  
 		/*
-		if (TOTAL_EXECUTION > 1495 && TOTAL_EXECUTION < 1505) return 1 ;
-		if (TOTAL_EXECUTION > 19995 && TOTAL_EXECUTION < 20005) return 1 ;
-		if (inc_per < GROWTH_SSH && TOTAL_EXECUTION>20005) {
-			if(re_counter < TOLERANCE)	re_counter++;
-			if(re_counter == TOLERANCE){
+		if (inc_per < INF) {
+			
+			if(re_counter<5){
+				re_counter++;
+			}else{
 				re_counter = 0;
 				return 1;
 			}
@@ -199,7 +194,6 @@ int coverage_check(COVG_MAP_VEC& trace){
 			re_counter = 0;
 		}
 		*/	
-		
 		system("sudo sync && echo 3 | sudo tee /proc/sys/vm/drop_caches"); //used to free system resource
 	}
 	
@@ -226,15 +220,12 @@ void prepare_before_config_vec(vector<struct Test_Parems>& vec_test_para)
 		output_file << vec_test_para.size() << "\n";
 		for (unsigned int i = 0; i < vec_test_para.size(); i++)
 		{
-			output_file 
-				//<< vec_test_para[i].speed
-				<< 10000	//speed
+			output_file << vec_test_para[i].speed
 				<< " " << vec_test_para[i].sftgma.alpha
 				<< " " << vec_test_para[i].sftgma.beta
 				<< " " << vec_test_para[i].sftgma.shift
 				<< " " << vec_test_para[i].Loss_rate
-				//<< " " << vec_test_para[i].app_speed
-				<< 1000000	//app_speed
+				<< " " << vec_test_para[i].app_speed
 				<< " " << vec_test_para[i].rng_run
 				<< " " << vec_test_para[i].curr_time
 				<< "\n";
@@ -257,7 +248,7 @@ void prepare_before_config_vec(vector<struct Test_Parems>& vec_test_para)
 		cout << "[Error] Canot output config vec!" << endl;
 		return ;
 	}
-	
+
 	system("cp /tmp/input_config.txt /tmp/output/"); // Record this input paremeter
 
 }
@@ -305,6 +296,11 @@ int try_per_config(int i, int mode) {	//test input i
 	//print the value of the inputs
 	prepare_before_config_vec(test_para_vec);
 	
+	//launch ns3
+	/*for (int j = 1; j <= TRIES_PER; j++){
+		
+		res = execute_ns3_2(0); //mode 0
+	}*/
 	res = execute_ns3_2(0);
 	
 	if (res == -1){		//if execution fails
@@ -332,7 +328,23 @@ int try_per_config(int i, int mode) {	//test input i
 		input_output_relation.push_back(make_pair(test_para, average_record));
 	
 	}
-	
+	/*
+	//print output values
+	snprintf (mvcmd, 256, "/tmp/output/%d/messages", TOTAL_EXECUTION);
+	res = read_from_file(mvcmd, covg_map_vec, config_map, test_para_vec); 
+
+	//after
+	snprintf (mvcmd, 256, "mv /tmp/output /tmp/output_all/config_%d", TOTAL_EXECUTION);
+	system(mvcmd);
+
+	if (DEBUG)
+	{
+		cout << "Input Test_Parems:" << endl;
+		test_para.print();
+	}
+
+	input_output_relation.push_back(make_pair(test_para, average_record));
+	*/
 	return res;
 }
 
@@ -418,10 +430,16 @@ int main (int argc, char* argv[])
 	purely_random_testing(0);
 	pearson_corrleation(input_output_relation, input_output_map); // To get pearson corrleation
 
+	//cout << "[Purely Random] 5d coverage:" << endl;
+	//cal_coverage_AllGrans(covg_map_vec);
+
 	cmd_init_feedback();
+	
 	
 	cout << "[Stage] Begin feedback 1: " << endl;
 	feedback_random_N(1, covg_map_vec, config_map, input_output_map);
+
+	//cal_coverage_AllGrans(covg_map_vec);
 
 	system("sudo sync && echo 3 | sudo tee /proc/sys/vm/drop_caches");
 	
