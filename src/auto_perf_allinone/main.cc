@@ -82,11 +82,11 @@ int convert_string_to_elem(string& line, COVG_MAP_VEC& trace, Config_Map& map_co
 
 	cwnd = stol(line.substr(c_left, s_left - 3));
 	ssthresh = stol(line.substr(s_left, ca_left - 4));
-	state = stol(line.substr(ca_left, r_left - 3));
-	srtt = stol(line.substr(r_left, o_left - 3));
-	rttvar = stol(line.substr(o_left, t_left - 3));
-	target = stol(line.substr(t_left, u_left - 3));
-	curr_time = stol(line.substr(u_left));
+	//state = stol(line.substr(ca_left, r_left - 3));
+	//srtt = stol(line.substr(r_left, o_left - 3));
+	//rttvar = stol(line.substr(o_left, t_left - 3));
+	//target = stol(line.substr(t_left, u_left - 3));
+	//curr_time = stol(line.substr(u_left));
 
 	if (ssthresh == 2147483647) return 0; // remove inital slow start
 	if (state == 4) state = 3; // substitute State Recovery(3) with State Loss(4) for state(0-3)
